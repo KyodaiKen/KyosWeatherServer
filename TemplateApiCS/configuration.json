@@ -23,7 +23,7 @@
     "SampleConfig": "TEST"
   },
   "ConnectionStrings": {
-    "SampleContex": "Data Source=database.db;Cache=Shared"
+    "DatabaseContext": "host=192.168.0.200;database=weather;user id=weather;password=.27xg~046asdfhha;"
   },
   "AllowedHosts": "*"
 }

@@ -1,11 +1,9 @@
-using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 using TemplateApiCS.Database;
 using TemplateApiCS.Middlewares;
 
-namespace TemplateApiCS
-{
-    public static class Program
-    {
+namespace TemplateApiCS {
+    public static class Program {
 #pragma warning disable CS8618 // Won't be null unless if the startup fails
         public static WebApplication WebApplication { get; set; }
 #pragma warning restore CS8618
@@ -13,15 +11,13 @@ namespace TemplateApiCS
         public static IConfiguration IConfiguration => WebApplication.Configuration;
         public static ILoggerFactory? ILoggerFactory => WebApplication.Services.GetService<ILoggerFactory>();
 
-        public static void Main(string[] args)
-        {
+        public static void Main(string[] args) {
             // https://docs.microsoft.com/es-es/dotnet/core/extensions/configuration-providers
             IConfigurationBuilder IConfigurationBuilder = new ConfigurationBuilder();
             IConfigurationBuilder = IConfigurationBuilder.AddJsonFile("configuration.json", optional: false, reloadOnChange: true);
             var iConfiguration = IConfigurationBuilder.Build();
 
-            var iLoggerFactory = LoggerFactory.Create(builder =>
-            {
+            var iLoggerFactory = LoggerFactory.Create(builder => {
                 builder.AddConfiguration(iConfiguration)
                     //.SetMinimumLevel(AppSettings.LogLevel)
                     //.AddFilter("Microsoft", LogLevel.Trace)
@@ -46,16 +42,16 @@ namespace TemplateApiCS
             IServiceCollection.AddSingleton(iConfiguration);
             IServiceCollection.AddSingleton(iLoggerFactory);
 
-//            IServiceCollection.AddSqlite<DatabaseContex>(iConfiguration.GetConnectionString("SampleContex"));
 
-//            IServiceCollection.AddDbContext<DatabaseContex>((builderOptions) =>
-//            {
-//#if DEBUG
-//                builderOptions.EnableDetailedErrors();
-//                builderOptions.EnableSensitiveDataLogging();
-                
-//#endif
-//            });
+            IServiceCollection.AddDbContext<DatabaseContext>((ctxBuilder) => 
+            {
+                ctxBuilder.UseNpgsql(connectionString: iConfiguration.GetConnectionString(nameof(DatabaseContext)));
+#if DEBUG 
+                ctxBuilder.EnableDetailedErrors();
+                ctxBuilder.EnableSensitiveDataLogging();
+#endif
+
+            });
 
             // Http file browser
             // Maybe not needed
@@ -64,8 +60,7 @@ namespace TemplateApiCS
             WebApplication = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (WebApplication.Environment.IsDevelopment())
-            {
+            if (WebApplication.Environment.IsDevelopment()) {
                 WebApplication.UseDeveloperExceptionPage();
                 WebApplication.UseSwagger();
                 WebApplication.UseSwaggerUI();
